@@ -1,0 +1,50 @@
+# Reference https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-s3.html#scenario-s3-bucket-website
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  S3BucketOne:
+    Type: AWS::S3::Bucket
+  S3BucketTwo:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Retain
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: MyPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join 
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref S3BucketTwo
+                - /*
+      Bucket: !Ref S3BucketTwo
+Outputs:
+  S3BucketOneName:
+    Value: !Ref S3BucketOne
+    Description: S3 Bucket One Name
+  S3BucketTwoName:
+    Value: !Ref S3BucketTwo
+    Description: S3 Bucket Two Name
+  WebsiteURL:
+    Value: !GetAtt 
+      - S3BucketTwo
+      - WebsiteURL
+    Description: URL for website hosted on S3 Bucket Two
+  S3BucketSecureURL:
+    Value: !Join 
+      - ''
+      - - 'https://'
+        - !GetAtt 
+          - S3BucketTwo
+          - DomainName
+    Description: Name of S3 bucket Two to hold website content
